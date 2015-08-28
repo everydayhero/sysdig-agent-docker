@@ -1,4 +1,4 @@
-FROM sysdig/agent:latest
+FROM sysdig/agent:0.1.155
 
 COPY ./docker-entrypoint.patch /
 
