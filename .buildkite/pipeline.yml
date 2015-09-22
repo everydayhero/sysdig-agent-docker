@@ -67,7 +67,7 @@ steps:
       ENVIRONMENT: "staging"
 
   -
-    type: "waiter"
+    type: "manual"
 
   -
     name: "Build Docker image (production)"
@@ -111,7 +111,7 @@ steps:
       ENVIRONMENT: "production"
 
   -
-    type: "waiter"
+    type: "manual"
 
   -
     name: "Deploy to production"
