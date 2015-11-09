@@ -1,28 +1,30 @@
 # buildkite.yml
 
 steps:
-  -
-    name: "Build Docker image (staging)"
-    command: "docker build -t 'quay.io/everydayhero/sysdig-agent:staging' ."
+  - name: "Build image"
+    command: "docker build -t sysdig-agent ."
+    agents:
+      - "plain_utils=true"
+
+  - wait
+
+  - name: "Tag image as staging"
+    command: "docker tag sysdig-agent quay.io/everydayhero/sysdig-agent:staging"
     branches: master
     agents:
       - "plain_utils=true"
 
-  -
-    type: "waiter"
+  - wait
 
-  -
-    name: "Push new build"
+  - name: "Push staging build"
     command: "docker push quay.io/everydayhero/sysdig-agent:staging"
     branches: master
     agents:
       - "plain_utils=true"
 
-  -
-    type: "waiter"
+  - wait
 
-  -
-    name: "Deploy to admin"
+  - name: "Deploy to staging admin"
     command: "plain-utils ansible-playbook $ENVIRONMENT master -l admin --tags sysdig coreos.yml"
     branches: master
     agents:
@@ -30,11 +32,9 @@ steps:
     env:
       ENVIRONMENT: "staging"
 
-  -
-    type: "waiter"
+  - wait
 
-  -
-    name: "Smoke test"
+  - name: "Smoke test"
     command: "plain-utils ansible $ENVIRONMENT master coreos -l admin -m raw -a \"'docker ps | grep sysdig-agent'\";"
     branches: master
     agents:
@@ -42,11 +42,9 @@ steps:
     env:
       ENVIRONMENT: "staging"
 
-  -
-    type: "waiter"
+  - wait
 
-  -
-    name: "Deploy to staging"
+  - name: "Deploy to staging"
     command: "plain-utils ansible-playbook $ENVIRONMENT master -l \\!kibana,\\!consul-server,\\!rabbitmq,\\!admin --tags sysdig coreos.yml"
     branches: master
     agents:
@@ -54,11 +52,9 @@ steps:
     env:
       ENVIRONMENT: "staging"
 
-  -
-    type: "waiter"
+  - wait
 
-  -
-    name: "Smoke Test"
+  - name: "Smoke Test"
     command: "sleep 30; plain-utils ansible $ENVIRONMENT master coreos -l \\!rabbitmq,\\!consul-server -m raw -a \"'docker ps | grep sysdig-agent'\";"
     branches: master
     agents:
@@ -66,31 +62,25 @@ steps:
     env:
       ENVIRONMENT: "staging"
 
-  -
-    type: "manual"
+  - block
 
-  -
-    name: "Build Docker image (production)"
-    command: "docker build -t 'quay.io/everydayhero/sysdig-agent:production' ."
+  - name: "Tag image as production"
+    command: "docker tag sysdig-agent quay.io/everydayhero/sysdig-agent:production"
     branches: master
     agents:
       - "plain_utils=true"
 
-  -
-    type: "waiter"
+  - wait
 
-  -
-    name: "Push new build"
+  - name: "Push production build"
     command: "docker push quay.io/everydayhero/sysdig-agent:production"
     branches: master
     agents:
       - "plain_utils=true"
 
-  -
-    type: "waiter"
+  - wait
 
-  -
-    name: "Deploy to admin"
+  - name: "Deploy to production admin"
     command: "plain-utils ansible-playbook $ENVIRONMENT master -l admin --tags sysdig coreos.yml"
     branches: master
     agents:
@@ -98,11 +88,9 @@ steps:
     env:
       ENVIRONMENT: "production"
 
-  -
-    type: "waiter"
+  - wait
 
-  -
-    name: "Smoke Test"
+  - name: "Smoke Test"
     command: "plain-utils ansible $ENVIRONMENT master coreos -l admin -m raw -a \"'docker ps | grep sysdig-agent'\";"
     branches: master
     agents:
@@ -110,11 +98,9 @@ steps:
     env:
       ENVIRONMENT: "production"
 
-  -
-    type: "manual"
+  - wait
 
-  -
-    name: "Deploy to production"
+  - name: "Deploy to production"
     command: "plain-utils ansible-playbook $ENVIRONMENT master -l \\!kibana,\\!consul-server,\\!rabbitmq,\\!admin --tags sysdig coreos.yml"
     branches: master
     agents:
@@ -122,11 +108,9 @@ steps:
     env:
       ENVIRONMENT: "production"
 
-  -
-    type: "waiter"
+  - wait
 
-  -
-    name: "Smoke Test"
+  - name: "Smoke Test"
     command: "sleep 30; plain-utils ansible $ENVIRONMENT master coreos -l \\!rabbitmq,\\!consul-server -m raw -a \"'docker ps | grep sysdig-agent'\";"
     branches: master
     agents:
