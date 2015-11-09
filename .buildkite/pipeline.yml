@@ -2,14 +2,14 @@
 
 steps:
   - name: "Build image"
-    command: "docker build -t sysdig-agent ."
+    command: "docker build -t sysdig-agent-build ."
     agents:
       - "plain_utils=true"
 
   - wait
 
   - name: "Tag image as staging"
-    command: "docker tag sysdig-agent quay.io/everydayhero/sysdig-agent:staging"
+    command: "docker tag -f sysdig-agent-build quay.io/everydayhero/sysdig-agent:staging"
     branches: master
     agents:
       - "plain_utils=true"
@@ -65,7 +65,7 @@ steps:
   - block
 
   - name: "Tag image as production"
-    command: "docker tag sysdig-agent quay.io/everydayhero/sysdig-agent:production"
+    command: "docker tag -f sysdig-agent-build quay.io/everydayhero/sysdig-agent:production"
     branches: master
     agents:
       - "plain_utils=true"
